@@ -2,20 +2,18 @@
 import React from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import Hero from "@/components/home/Hero";
-import FeatureSection from "@/components/home/FeatureSection";
+import JobList from "@/components/jobs/JobList";
 
-const Index: React.FC = () => {
+const Jobs: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow">
-        <Hero />
-        <FeatureSection />
+      <main className="flex-grow bg-gray-50">
+        <JobList />
       </main>
       <Footer />
     </div>
   );
 };
 
-export default Index;
+export default Jobs;
