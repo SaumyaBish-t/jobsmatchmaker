@@ -1,13 +1,20 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText, Upload } from "lucide-react";
 import { toast } from "sonner";
 
-const ResumeUpload: React.FC = () => {
+interface ResumeUploadProps {
+  user?: any;
+}
+
+const ResumeUpload: React.FC<ResumeUploadProps> = ({ user }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -44,16 +51,32 @@ const ResumeUpload: React.FC = () => {
     }
   };
 
-  const analyzeResume = () => {
+  const uploadAndAnalyzeResume = async () => {
     if (!file) return;
 
-    setIsAnalyzing(true);
-    // In a real app, we would upload and process the resume here
-    setTimeout(() => {
+    try {
+      setIsUploading(true);
+      
+      // In a production app, we would upload to a backend here
+      // For now, we'll simulate the upload with a timeout
+      setTimeout(() => {
+        setIsUploading(false);
+        setIsAnalyzing(true);
+        
+        // After upload is complete, analyze the resume
+        setTimeout(() => {
+          setIsAnalyzing(false);
+          toast.success("Resume analyzed successfully!");
+          navigate('/dashboard');
+        }, 2000);
+      }, 2000);
+      
+    } catch (error) {
+      console.error("Error uploading resume:", error);
+      toast.error("There was an error uploading your resume. Please try again.");
+      setIsUploading(false);
       setIsAnalyzing(false);
-      toast.success("Resume analyzed successfully!");
-      // Navigate to recommendations or profile page
-    }, 2000);
+    }
   };
 
   return (
@@ -69,7 +92,7 @@ const ResumeUpload: React.FC = () => {
       
       <div 
         className={`border-2 border-dashed rounded-lg p-12 text-center ${
-          isDragging ? "border-primary bg-primary-50" : "border-gray-300"
+          isDragging ? "border-primary bg-primary/10" : "border-gray-300"
         } ${file ? "bg-green-50" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -121,11 +144,11 @@ const ResumeUpload: React.FC = () => {
                 Remove
               </Button>
               <Button
-                onClick={analyzeResume}
-                disabled={isAnalyzing}
+                onClick={uploadAndAnalyzeResume}
+                disabled={isUploading || isAnalyzing}
                 className="text-sm"
               >
-                {isAnalyzing ? "Analyzing..." : "Analyze Resume"}
+                {isUploading ? "Uploading..." : isAnalyzing ? "Analyzing..." : "Upload & Analyze Resume"}
               </Button>
             </div>
           </div>
