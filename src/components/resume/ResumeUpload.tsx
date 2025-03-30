@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ResumeUploadProps {
   user?: any;
@@ -52,32 +53,82 @@ const ResumeUpload: React.FC<ResumeUploadProps> = ({ user }) => {
   };
 
   const uploadAndAnalyzeResume = async () => {
-    if (!file) return;
+    if (!file || !user) {
+      toast.error("Please select a file or log in to continue");
+      return;
+    }
 
     try {
       setIsUploading(true);
       
-      // In a production app, we would upload to a backend here
-      // For now, we'll simulate the upload with a timeout
+      // Generate a unique file path
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      // Upload file to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('resumes')
+        .upload(filePath, file);
+      
+      if (uploadError) {
+        throw uploadError;
+      }
+      
+      // Get the public URL for the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from('resumes')
+        .getPublicUrl(filePath);
+      
+      setIsUploading(false);
+      setIsAnalyzing(true);
+      
+      // Insert record in the resumes table
+      const { data: resumeData, error: resumeError } = await supabase
+        .from('resumes')
+        .insert({
+          user_id: user.id,
+          file_name: file.name,
+          file_type: file.type,
+          file_size: file.size,
+          file_url: publicUrl,
+        })
+        .select();
+      
+      if (resumeError) {
+        throw resumeError;
+      }
+      
+      // Simulate resume analysis
+      // In a real application, this would call an API for resume parsing
       setTimeout(() => {
-        setIsUploading(false);
-        setIsAnalyzing(true);
-        
-        // After upload is complete, analyze the resume
-        setTimeout(() => {
-          setIsAnalyzing(false);
-          toast.success("Resume analyzed successfully!");
-          navigate('/dashboard');
-        }, 2000);
+        setIsAnalyzing(false);
+        toast.success("Resume uploaded and analyzed successfully!");
+        navigate('/dashboard');
       }, 2000);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading resume:", error);
-      toast.error("There was an error uploading your resume. Please try again.");
+      toast.error("There was an error uploading your resume: " + error.message);
       setIsUploading(false);
       setIsAnalyzing(false);
     }
   };
+
+  if (!user) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+        <h2 className="text-2xl font-extrabold text-gray-900">
+          Please log in to upload your resume
+        </h2>
+        <Button 
+          onClick={() => navigate('/auth')}
+          className="mt-6"
+        >
+          Go to Login
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

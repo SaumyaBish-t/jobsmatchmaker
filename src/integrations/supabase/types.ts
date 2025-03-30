@@ -75,6 +75,45 @@ export type Database = {
         }
         Relationships: []
       }
+      resumes: {
+        Row: {
+          analysis_data: Json | null
+          analyzed: boolean
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id: string
+          updated_at: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_data?: Json | null
+          analyzed?: boolean
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id?: string
+          updated_at?: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_data?: Json | null
+          analyzed?: boolean
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          file_url?: string
+          id?: string
+          updated_at?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       rooms: {
         Row: {
           amenities: string[] | null
@@ -116,6 +155,38 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      skills: {
+        Row: {
+          created_at: string
+          id: string
+          resume_id: string
+          skill_level: string | null
+          skill_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          resume_id: string
+          skill_level?: string | null
+          skill_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          resume_id?: string
+          skill_level?: string | null
+          skill_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skills_resume_id_fkey"
+            columns: ["resume_id"]
+            isOneToOne: false
+            referencedRelation: "resumes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
