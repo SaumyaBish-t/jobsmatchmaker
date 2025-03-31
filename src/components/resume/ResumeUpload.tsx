@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Upload } from "lucide-react";
+import { FileText, Upload, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,6 +15,8 @@ const ResumeUpload: React.FC<ResumeUploadProps> = ({ user }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,6 +52,27 @@ const ResumeUpload: React.FC<ResumeUploadProps> = ({ user }) => {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0]);
     }
+  };
+
+  const handleBrowseClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const simulateAnalysisProgress = () => {
+    const interval = setInterval(() => {
+      setAnalysisProgress(prev => {
+        const newProgress = prev + 10;
+        if (newProgress >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return newProgress;
+      });
+    }, 300);
+    
+    return () => clearInterval(interval);
   };
 
   const uploadAndAnalyzeResume = async () => {
@@ -97,20 +120,41 @@ const ResumeUpload: React.FC<ResumeUploadProps> = ({ user }) => {
       if (resumeError) {
         throw resumeError;
       }
+
+      // Start the progress simulation
+      const stopProgressSimulation = simulateAnalysisProgress();
       
-      // Simulate resume analysis
-      // In a real application, this would call an API for resume parsing
+      // Call the edge function to analyze the resume
+      const { error: analyzeError } = await supabase.functions
+        .invoke('analyze-resume', {
+          body: {
+            resumeId: resumeData[0].id,
+            fileUrl: publicUrl
+          }
+        });
+
+      if (analyzeError) {
+        throw analyzeError;
+      }
+      
+      // Complete the progress simulation
+      setAnalysisProgress(100);
+      
+      // Show success message after a brief delay to let the user see the 100% progress
       setTimeout(() => {
         setIsAnalyzing(false);
         toast.success("Resume uploaded and analyzed successfully!");
         navigate('/dashboard');
-      }, 2000);
+      }, 1000);
+      
+      return () => stopProgressSimulation();
       
     } catch (error: any) {
       console.error("Error uploading resume:", error);
       toast.error("There was an error uploading your resume: " + error.message);
       setIsUploading(false);
       setIsAnalyzing(false);
+      setAnalysisProgress(0);
     }
   };
 
@@ -161,18 +205,20 @@ const ResumeUpload: React.FC<ResumeUploadProps> = ({ user }) => {
               or
             </p>
             <div className="mt-2">
-              <label htmlFor="file-upload" className="cursor-pointer">
-                <Button variant="outline">
-                  Browse files
-                </Button>
-                <input
-                  id="file-upload"
-                  type="file"
-                  className="sr-only"
-                  accept=".pdf,.doc,.docx"
-                  onChange={handleFileChange}
-                />
-              </label>
+              <input
+                ref={fileInputRef}
+                id="file-upload"
+                type="file"
+                className="sr-only"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileChange}
+              />
+              <Button 
+                variant="outline" 
+                onClick={handleBrowseClick}
+              >
+                Browse files
+              </Button>
             </div>
             <p className="mt-2 text-xs text-gray-500">
               Supported formats: PDF, Word (.doc, .docx)
@@ -199,9 +245,42 @@ const ResumeUpload: React.FC<ResumeUploadProps> = ({ user }) => {
                 disabled={isUploading || isAnalyzing}
                 className="text-sm"
               >
-                {isUploading ? "Uploading..." : isAnalyzing ? "Analyzing..." : "Upload & Analyze Resume"}
+                {isUploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : isAnalyzing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  "Upload & Analyze Resume"
+                )}
               </Button>
             </div>
+            
+            {isAnalyzing && (
+              <div className="mt-6">
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                  <div 
+                    className="bg-primary h-2.5 rounded-full transition-all duration-300" 
+                    style={{ width: `${analysisProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm text-gray-600">
+                  {analysisProgress === 100 ? (
+                    <span className="flex items-center justify-center text-green-600">
+                      <CheckCircle className="mr-1 h-4 w-4" />
+                      Analysis complete!
+                    </span>
+                  ) : (
+                    `Analyzing your resume: ${analysisProgress}%`
+                  )}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

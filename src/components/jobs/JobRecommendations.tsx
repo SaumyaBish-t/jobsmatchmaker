@@ -14,10 +14,31 @@ import { Briefcase, BookOpen, Brain, TrendingUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-const JobRecommendations = () => {
-  const [recommendations, setRecommendations] = useState([]);
+interface Skill {
+  id: string;
+  resume_id: string;
+  skill_name: string;
+  skill_level: string | null;
+  created_at: string;
+}
+
+interface Job {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  salary: string;
+  description: string;
+  skills: string[];
+  postedDate: string;
+  matchPercentage?: number;
+  matchingSkills?: string[];
+}
+
+const JobRecommendations: React.FC = () => {
+  const [recommendations, setRecommendations] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userSkills, setUserSkills] = useState([]);
+  const [userSkills, setUserSkills] = useState<Skill[]>([]);
   const [hasResume, setHasResume] = useState(false);
   const navigate = useNavigate();
 
@@ -61,16 +82,16 @@ const JobRecommendations = () => {
             console.error("Error fetching skills:", skillsError);
             toast.error("Failed to load skills data");
           } else if (skills) {
-            setUserSkills(skills);
+            setUserSkills(skills as Skill[]);
           }
           
           // Fetch job recommendations based on skills
-          fetchRecommendations(skills || []);
+          fetchRecommendations(skills as Skill[] || []);
         } else {
           setLoading(false);
         }
         
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching user data:", error);
         toast.error("Failed to load user data");
         setLoading(false);
@@ -80,7 +101,7 @@ const JobRecommendations = () => {
     fetchUserData();
   }, []);
 
-  const fetchRecommendations = async (skills) => {
+  const fetchRecommendations = async (skills: Skill[]) => {
     try {
       setLoading(true);
       
@@ -88,7 +109,7 @@ const JobRecommendations = () => {
       // For now, we'll simulate matching based on skill names
       
       // Sample job data - in a real app this would come from an API
-      const sampleJobs = [
+      const sampleJobs: Job[] = [
         {
           id: "1",
           title: "Senior Frontend Developer",
@@ -172,7 +193,7 @@ const JobRecommendations = () => {
       });
       
       // Sort by match percentage (highest first)
-      matchedJobs.sort((a, b) => b.matchPercentage - a.matchPercentage);
+      matchedJobs.sort((a, b) => (b.matchPercentage || 0) - (a.matchPercentage || 0));
       
       setRecommendations(matchedJobs);
       setLoading(false);

@@ -114,48 +114,6 @@ export type Database = {
         }
         Relationships: []
       }
-      rooms: {
-        Row: {
-          amenities: string[] | null
-          capacity: number
-          created_at: string
-          description: string | null
-          id: string
-          image_url: string | null
-          is_available: boolean
-          price_per_night: number
-          room_number: string
-          room_type: string
-          updated_at: string
-        }
-        Insert: {
-          amenities?: string[] | null
-          capacity: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          is_available?: boolean
-          price_per_night: number
-          room_number: string
-          room_type: string
-          updated_at?: string
-        }
-        Update: {
-          amenities?: string[] | null
-          capacity?: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          is_available?: boolean
-          price_per_night?: number
-          room_number?: string
-          room_type?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       skills: {
         Row: {
           created_at: string
