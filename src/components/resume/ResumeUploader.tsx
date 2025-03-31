@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -85,11 +84,9 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ user }) => {
     try {
       setIsUploading(true);
       
-      // Generate a unique file path
       const fileExt = file.name.split('.').pop();
       const filePath = `${user.id}/${Date.now()}.${fileExt}`;
       
-      // Upload file to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('resumes')
         .upload(filePath, file);
@@ -98,7 +95,6 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ user }) => {
         throw uploadError;
       }
       
-      // Get the public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('resumes')
         .getPublicUrl(filePath);
@@ -106,7 +102,6 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ user }) => {
       setIsUploading(false);
       setIsAnalyzing(true);
       
-      // Insert record in the resumes table
       const { data: resumeData, error: resumeError } = await supabase
         .from('resumes')
         .insert({
@@ -122,10 +117,8 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ user }) => {
         throw resumeError;
       }
 
-      // Start the progress simulation
       const stopProgressSimulation = simulateAnalysisProgress();
       
-      // Call the edge function to analyze the resume
       const { error: analyzeError } = await supabase.functions
         .invoke('analyze-resume', {
           body: {
@@ -138,12 +131,9 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ user }) => {
         throw analyzeError;
       }
       
-      // Complete the progress simulation
       setAnalysisProgress(100);
       
-      // Show success message after a brief delay to let the user see the 100% progress
       setTimeout(() => {
-        // Clean up the interval
         stopProgressSimulation();
         
         setIsAnalyzing(false);
@@ -214,6 +204,7 @@ const EmptyStateView: React.FC<EmptyStateViewProps> = ({ handleBrowseClick, file
       <Button 
         variant="outline" 
         onClick={handleBrowseClick}
+        type="button"
       >
         Browse files
       </Button>
