@@ -143,12 +143,13 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ user }) => {
       
       // Show success message after a brief delay to let the user see the 100% progress
       setTimeout(() => {
+        // Clean up the interval
+        stopProgressSimulation();
+        
         setIsAnalyzing(false);
         toast.success("Resume uploaded and analyzed successfully!");
         navigate('/dashboard');
       }, 1000);
-      
-      return () => stopProgressSimulation();
       
     } catch (error: any) {
       console.error("Error uploading resume:", error);
