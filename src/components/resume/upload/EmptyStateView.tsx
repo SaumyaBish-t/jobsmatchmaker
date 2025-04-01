@@ -4,7 +4,7 @@ import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface EmptyStateViewProps {
-  handleBrowseClick: () => void;
+  handleBrowseClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
