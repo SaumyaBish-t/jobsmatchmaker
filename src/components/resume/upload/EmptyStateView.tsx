@@ -12,8 +12,12 @@ const EmptyStateView: React.FC<EmptyStateViewProps> = ({
   fileInputRef, 
   handleFileChange 
 }) => {
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
+  // This function will be called when the Browse files button is clicked
+  const handleBrowseClick = () => {
+    // Directly click the hidden file input
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   return (
@@ -39,7 +43,7 @@ const EmptyStateView: React.FC<EmptyStateViewProps> = ({
         />
         <Button 
           variant="outline" 
-          onClick={triggerFileInput}
+          onClick={handleBrowseClick}
           type="button"
         >
           Browse files
