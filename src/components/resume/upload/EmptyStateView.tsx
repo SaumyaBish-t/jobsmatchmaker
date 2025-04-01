@@ -28,6 +28,7 @@ const EmptyStateView: React.FC<EmptyStateViewProps> = ({
       <input
         ref={fileInputRef}
         id="file-upload"
+        name="file-upload"
         type="file"
         className="sr-only"
         accept=".pdf,.doc,.docx"

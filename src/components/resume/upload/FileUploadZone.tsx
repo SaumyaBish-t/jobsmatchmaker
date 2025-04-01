@@ -49,8 +49,11 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     }
   };
 
-  const handleBrowseClick = () => {
-    // Make sure we're properly clicking the input element
+  const handleBrowseClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Explicitly trigger click on the file input
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
