@@ -6,14 +6,21 @@ import { Button } from "@/components/ui/button";
 interface EmptyStateViewProps {
   fileInputRef: React.RefObject<HTMLInputElement>;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleBrowseClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const EmptyStateView: React.FC<EmptyStateViewProps> = ({ 
   fileInputRef, 
-  handleFileChange 
+  handleFileChange,
+  handleBrowseClick
 }) => {
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
+  const triggerFileInput = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (handleBrowseClick) {
+      handleBrowseClick(e);
+    } else {
+      // Default behavior: trigger file input click
+      fileInputRef.current?.click();
+    }
   };
 
   return (

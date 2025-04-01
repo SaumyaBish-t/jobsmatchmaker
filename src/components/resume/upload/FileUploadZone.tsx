@@ -49,15 +49,6 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     }
   };
 
-  const handleBrowseClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    
-    // Explicitly trigger click on the file input
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
   return (
     <div 
       className={`border-2 border-dashed rounded-lg p-12 text-center ${
@@ -69,7 +60,6 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     >
       {!file ? (
         <EmptyStateView 
-          handleBrowseClick={handleBrowseClick} 
           fileInputRef={fileInputRef} 
           handleFileChange={handleFileChange} 
         />
